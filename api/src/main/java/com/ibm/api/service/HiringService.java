@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class HiringService {
@@ -23,7 +24,7 @@ public class HiringService {
         this.candidatos = new HashMap<>();
     }
 
-    public int iniciarProcesso(String nome) throws Exception {
+    public int iniciarProcesso(String nome) {
         for (Candidato candidato: candidatos.values()){
             if (candidato.getNome().equals(nome)) {
                 throw new CandidatoJaParticipaException();
@@ -34,7 +35,7 @@ public class HiringService {
         return nextCodCandidato++;
     }
 
-    public void marcarEntrevista(int codCandidato) throws Exception {
+    public void marcarEntrevista(int codCandidato) {
         Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
         if (verificaCandidatoExiste == null || !verificaCandidatoExiste.getStatus().equals("Recebido")){
             throw new CandidatoNaoEncontradoException();
@@ -42,7 +43,7 @@ public class HiringService {
         verificaCandidatoExiste.setStatus("Qualificado");
     }
 
-    public void desqualificarCandidato(int codCandidato) throws Exception {
+    public void desqualificarCandidato(int codCandidato) {
         Candidato verificaCandidato = candidatos.get(codCandidato);
         if (verificaCandidato == null){
             throw new CandidatoNaoEncontradoException();
@@ -54,15 +55,7 @@ public class HiringService {
         }
     }
 
-    public String verificarStatusCandidato(int codCandidato) throws Exception {
-        Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
-        if (verificaCandidatoExiste == null){
-            throw new CandidatoNaoEncontradoException();
-        }
-        return verificaCandidatoExiste.getStatus();
-    }
-
-    public void aprovarCandidato(int codCandidato) throws Exception {
+    public void aprovarCandidato(int codCandidato) {
         Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
         if (verificaCandidatoExiste == null || !verificaCandidatoExiste.getStatus().equals("Qualificado")){
             throw new CandidatoNaoEncontradoException();
@@ -70,13 +63,17 @@ public class HiringService {
         verificaCandidatoExiste.setStatus("Aprovado");
     }
 
-    public List<String> obterAprovados() {
-        List<String> aprovados = new ArrayList<>();
-        for(Candidato candidato: candidatos.values()){
-            if (candidato.getStatus().equals("Aprovado")){
-                aprovados.add(candidato.getNome());
-            }
+    public String verificarStatusCandidato(int codCandidato) {
+        Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
+        if (verificaCandidatoExiste == null){
+            throw new CandidatoNaoEncontradoException();
         }
-        return aprovados;
+        return verificaCandidatoExiste.getStatus();
+    }
+    public List<String> obterAprovados() {
+        return candidatos.values().stream()
+                .filter(candidato -> candidato.getStatus().equals("Aprovado"))
+                .map(Candidato::getNome)
+                .collect(Collectors.toList());
     }
 }
