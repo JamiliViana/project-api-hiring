@@ -1,7 +1,10 @@
-package service;
+package com.ibm.api.service;
 
-import model.Candidato;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ibm.api.advice.ErrorHandler;
+import com.ibm.api.advice.exception.CandidatoJaParticipaException;
+import com.ibm.api.advice.exception.CandidatoNaoEncontradoException;
+import com.ibm.api.advice.exception.NomeInvalidoException;
+import com.ibm.api.model.Candidato;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,12 +24,9 @@ public class HiringService {
     }
 
     public int iniciarProcesso(String nome) throws Exception {
-        if (nome == null || nome.isEmpty() || nome.isBlank()){
-            throw new Exception("Nome inválido");
-        }
         for (Candidato candidato: candidatos.values()){
             if (candidato.getNome().equals(nome)) {
-                throw new Exception("Candidato já participa do processo.");
+                throw new CandidatoJaParticipaException();
             }
         }
         Candidato novoCandidato = new Candidato(nextCodCandidato, nome, "Recebido");
@@ -37,7 +37,7 @@ public class HiringService {
     public void marcarEntrevista(int codCandidato) throws Exception {
         Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
         if (verificaCandidatoExiste == null || !verificaCandidatoExiste.getStatus().equals("Recebido")){
-            throw new Exception("Candidato não encontrado");
+            throw new CandidatoNaoEncontradoException();
         }
         verificaCandidatoExiste.setStatus("Qualificado");
     }
@@ -45,7 +45,7 @@ public class HiringService {
     public void desqualificarCandidato(int codCandidato) throws Exception {
         Candidato verificaCandidato = candidatos.get(codCandidato);
         if (verificaCandidato == null){
-            throw new Exception("Candidato não encontrado");
+            throw new CandidatoNaoEncontradoException();
         }else {
             candidatos.remove(codCandidato);
             verificaCandidato.setNome(null);
@@ -57,7 +57,7 @@ public class HiringService {
     public String verificarStatusCandidato(int codCandidato) throws Exception {
         Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
         if (verificaCandidatoExiste == null){
-            throw new Exception("Candidato não encontrado");
+            throw new CandidatoNaoEncontradoException();
         }
         return verificaCandidatoExiste.getStatus();
     }
@@ -65,7 +65,7 @@ public class HiringService {
     public void aprovarCandidato(int codCandidato) throws Exception {
         Candidato verificaCandidatoExiste = candidatos.get(codCandidato);
         if (verificaCandidatoExiste == null || !verificaCandidatoExiste.getStatus().equals("Qualificado")){
-            throw new Exception("Candidato não encontrado");
+            throw new CandidatoNaoEncontradoException();
         }
         verificaCandidatoExiste.setStatus("Aprovado");
     }

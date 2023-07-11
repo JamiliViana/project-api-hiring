@@ -1,4 +1,4 @@
-package model;
+package com.ibm.api.model;
 
 public class Candidato {
     private Integer codCanditado;
